@@ -20,6 +20,7 @@ function handleShowCountry(event) {
   fetchCountries(inputValue)
     .then(data => {
       const country = data[0];
+
       if (data.length > 10) {
         Notiflix.Notify.info(
           '"Too many matches found. Please enter a more specific name."'
@@ -27,7 +28,7 @@ function handleShowCountry(event) {
         return '';
       } else if (data.length > 1 && data.length < 10) {
         return data.reduce(
-          (markup, country) => createLittleMarkup(country) + markup,
+          (markup, country) => createListMarkup(country) + markup,
           ''
         );
       } else {
@@ -39,7 +40,7 @@ function handleShowCountry(event) {
     })
 
     .then(CreateInterfaceMarkup)
-    .catch(debounce(onError, DEBOUNCE_DELAY))
+    .catch(onError)
     .finally(() => {});
 }
 
@@ -50,21 +51,21 @@ function createMarkup({ name, capital, population, flags, languages }) {
     <img src=${flags.svg} alt="flag" width="40px" height="40px">
     <h2 class="name">${name.official}</h2>
    </div>
-   <p class="text"><span class="text-weight">Capital:</span> ${capital[0]}</p>
-   <p class="text"><span class="text-weight">Population:</span> ${population}</p>
-   <p class="text"><span class="text-weight">Languages:</span> ${Object.values(
-     languages
-   ).join(', ')}</p>
+   <p class="text"><b>Capital:</b> ${capital[0] || ''}</p>
+   <p class="text"><b>Population:</b> ${population}</p>
+   <p class="text"><b>Languages:</b> ${Object.values(languages).join(', ')}</p>
   </div>`;
 }
 
-function createLittleMarkup({ flags, name }) {
-  return `<div  class="country-card">
+function createListMarkup({ flags, name }) {
+  return `
+          <div  class="country-card">
            <div class="wrap">
             <img src=${flags.svg} alt="flag" width="30px" height="30px>
             <h2 class="name">${name.official}</h2>
            </div>
-          </div>`;
+          </div>
+        `;
 }
 
 function CreateInterfaceMarkup(markup) {
@@ -73,6 +74,8 @@ function CreateInterfaceMarkup(markup) {
 
 function onError(err) {
   console.log(err);
-  Notiflix.Notify.failure('Oops, there is no country with that name');
   wrapMarkup.innerHTML = '';
+  return Notiflix.Notify.failure(
+    'Too many matches found. Please enter a more specific name.'
+  );
 }
