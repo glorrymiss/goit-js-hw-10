@@ -1,6 +1,8 @@
 import '../css/styles.css';
+// затримка часу
 import fetchCountries from './fetchCountries.js';
 const debounce = require('lodash.debounce');
+// сповіщення
 import Notiflix from 'notiflix';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 const DEBOUNCE_DELAY = 300;
@@ -14,34 +16,38 @@ inputField.addEventListener(
 
 function handleShowCountry(event) {
   event.preventDefault();
+
   const inputValue = event.target.value.trim();
   console.log(inputValue);
+  if (inputValue === '') {
+    return (wrapMarkup.innerHTML = '');
+  } else {
+    fetchCountries(inputValue)
+      .then(data => {
+        const country = data[0];
 
-  fetchCountries(inputValue)
-    .then(data => {
-      const country = data[0];
+        if (data.length > 10) {
+          Notiflix.Notify.info(
+            '"Too many matches found. Please enter a more specific name."'
+          );
+          return '';
+        } else if (data.length > 1 && data.length < 10) {
+          return data.reduce(
+            (markup, country) => createListMarkup(country) + markup,
+            ''
+          );
+        } else {
+          return data.reduce(
+            (markup, country) => createMarkup(country) + markup,
+            ''
+          );
+        }
+      })
 
-      if (data.length > 10) {
-        Notiflix.Notify.info(
-          '"Too many matches found. Please enter a more specific name."'
-        );
-        return '';
-      } else if (data.length > 1 && data.length < 10) {
-        return data.reduce(
-          (markup, country) => createListMarkup(country) + markup,
-          ''
-        );
-      } else {
-        return data.reduce(
-          (markup, country) => createMarkup(country) + markup,
-          ''
-        );
-      }
-    })
-
-    .then(CreateInterfaceMarkup)
-    .catch(onError)
-    .finally(() => {});
+      .then(CreateInterfaceMarkup)
+      .catch(onError)
+      .finally(() => {});
+  }
 }
 
 function createMarkup({ name, capital, population, flags, languages }) {
