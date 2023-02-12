@@ -45,8 +45,7 @@ function handleShowCountry(event) {
       })
 
       .then(CreateInterfaceMarkup)
-      .catch(onError)
-      .finally(() => {});
+      .catch(onError);
   }
 }
 
